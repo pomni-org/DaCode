@@ -4,3 +4,4 @@ test/**
 remote/**
 src/language-service.js
 assets/dacode.png
+assets/dacode-source.webp

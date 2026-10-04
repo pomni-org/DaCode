@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.3
+
+- Rebuilt both icon sizes from the complete original DaCode artwork without cropping.
+- Added integrity tests that reject truncated PNG assets before packaging.
+
 ## 0.5.2
 
 - Changed the Marketplace display name to `DaCode Language by Pomni` because the removed `DaCode` listing still reserves that display name.
