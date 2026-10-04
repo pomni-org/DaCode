@@ -1,4 +1,6 @@
 test/**
 .vscode/**
 *.vsix
-remote/**\nsrc/language-service.js\nassets/dacode.png\n
+remote/**
+src/language-service.js
+assets/dacode.png

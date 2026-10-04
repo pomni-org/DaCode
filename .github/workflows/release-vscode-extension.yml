@@ -42,6 +42,18 @@ jobs:
           unzip -l "$FILE" | grep -F '[Content_Types].xml'
           unzip -l "$FILE" | grep -F 'extension.vsixmanifest'
           unzip -l "$FILE" | grep -F 'extension/package.json'
+          unzip -l "$FILE" | grep -F 'extension/src/extension.js'
+          unzip -l "$FILE" | grep -F 'extension/src/repository-sync.js'
+          unzip -l "$FILE" | grep -F 'extension/assets/dacode-file.png'
+          unzip -l "$FILE" | grep -F 'extension/assets/dacode-marketplace.png'
+          if unzip -l "$FILE" | grep -q 'extension/remote/'; then
+            echo "Remote GitHub client leaked into VSIX"
+            exit 1
+          fi
+          if unzip -l "$FILE" | grep -q 'extension/src/language-service.js'; then
+            echo "Local language service leaked into VSIX"
+            exit 1
+          fi
           node -e "const p=require('./package.json');if(!p.name||!p.publisher||!p.version||!p.engines?.vscode)process.exit(1);console.log('manifest ok:',p.publisher+'.'+p.name,p.version)"
       - name: Create or update GitHub Release
         env:

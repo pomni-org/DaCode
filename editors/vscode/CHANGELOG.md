@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.1
+
+- Fixed VSIX exclusions so the GitHub client is no longer bundled locally.
+- Added packaging guards that fail CI if remote client code leaks into the VSIX.
+- Kept the corrected compact DaCode file icon and Marketplace icon.
+
+# Changelog
+
 ## 0.5.0
 
 - Rebuilt the extension as a thin GitHub bootstrap.

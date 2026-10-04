@@ -25,7 +25,18 @@ jobs:
       - name: Test extension
         run: npm test
       - name: Package VSIX
-        run: npx --yes @vscode/vsce package --out dacode-programming-language-${{ github.sha }}.vsix
+        run: |
+          FILE="dacode-programming-language-${{ github.sha }}.vsix"
+          npx --yes @vscode/vsce package --out "$FILE"
+          unzip -t "$FILE"
+          if unzip -l "$FILE" | grep -q 'extension/remote/'; then
+            echo "Remote GitHub client leaked into VSIX"
+            exit 1
+          fi
+          if unzip -l "$FILE" | grep -q 'extension/src/language-service.js'; then
+            echo "Local language service leaked into VSIX"
+            exit 1
+          fi
       - name: Upload VSIX
         uses: actions/upload-artifact@v4
         with:
