@@ -25,7 +25,7 @@ jobs:
       - name: Test extension
         run: npm test
       - name: Package VSIX
-        run: npx --yes @vscode/vsce package --out dacode-language-${{ github.sha }}.vsix
+        run: npx --yes @vscode/vsce package --out dacode-programming-language-${{ github.sha }}.vsix
       - name: Upload VSIX
         uses: actions/upload-artifact@v4
         with:

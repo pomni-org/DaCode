@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.2
+
+- Moved the Marketplace identity to `pomni-org.dacode-programming-language` because the removed `pomni-org.dacode-language` identity is permanently reserved by the Marketplace.
+- This is a fresh Marketplace listing; future updates can use the normal update flow.
+
+# Changelog
+
 ## 0.4.0
 
 - Simplified declarations: `remem name():` for functions, `remem Name:` for classes, `remem name = value` for variables.
