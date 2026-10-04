@@ -154,7 +154,6 @@ async function runFile(resource) {
   if (vscode.workspace.getConfiguration('dacode').get('clearOutputBeforeRun', true)) output.clear();
   output.show(true);
   diagnostics.delete(document.uri);
-  output.appendLine('▶ ' + path.basename(document.fileName) + ' · DaCode ' + activeRevision.commitSha.slice(0, 7));
 
   const baseDir = document.isUntitled
     ? (vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? process.cwd())
@@ -170,13 +169,87 @@ async function runFile(resource) {
     logAll: false,
   };
 
+  const startedAt = Date.now();
   try {
-    await runtime.execute(document.getText(), host, baseDir, activeRevision.spec);
-    output.appendLine('✓ DaCode finished');
+    const program = runtime.parse(document.getText(), activeRevision.spec);
+    const controls = runtime.outputControls(program);
+    if (!controls.hideStart) {
+      output.appendLine(
+        'DaCode: запуск ' + path.basename(document.fileName) +
+        ' · ревизия ' + activeRevision.commitSha.slice(0, 7)
+      );
+    }
+    await runtime.executeProgram(program, host, baseDir, activeRevision.spec);
+    if (!controls.hideFinish) {
+      output.appendLine(
+        'DaCode: программа завершена. Код выхода: 0. Время: ' +
+        (Date.now() - startedAt) + ' мс.'
+      );
+    }
   } catch (error) {
-    output.appendLine('✗ ' + (error?.message ?? error));
-    vscode.window.showErrorMessage('DaCode: ' + (error?.message ?? error));
+    reportExecutionError(document, error);
   }
+}
+
+function reportExecutionError(document, error) {
+  const line = Math.max(1, Number(error?.line) || 1);
+  const column = Math.max(1, Number(error?.column ?? error?.col) || 1);
+  const reason = String(error?.message ?? error);
+  const lineIndex = Math.min(document.lineCount - 1, line - 1);
+  const lineText = document.lineAt(lineIndex).text;
+  const startColumn = Math.min(Math.max(0, column - 1), lineText.length);
+  const endColumn = Math.min(lineText.length, Math.max(startColumn + 1, lineText.length));
+  const range = new vscode.Range(lineIndex, startColumn, lineIndex, endColumn);
+  const diagnostic = new vscode.Diagnostic(
+    range,
+    'DaCode: ' + reason,
+    vscode.DiagnosticSeverity.Error
+  );
+  diagnostic.source = 'DaCode';
+  diagnostics.set(document.uri, [diagnostic]);
+
+  output.appendLine('');
+  output.appendLine('ОШИБКА DaCode');
+  output.appendLine('Файл: ' + path.basename(document.fileName));
+  output.appendLine('Строка: ' + line + ', столбец: ' + column);
+  output.appendLine('Причина: ' + reason);
+  const hint = errorHint(reason);
+  if (hint) output.appendLine('Подсказка: ' + hint);
+  output.appendLine('Программа остановлена. Код выхода: 1.');
+
+  const editor = vscode.window.visibleTextEditors.find(
+    item => item.document.uri.toString() === document.uri.toString()
+  );
+  if (editor) {
+    editor.selection = new vscode.Selection(range.start, range.start);
+    editor.revealRange(range, vscode.TextEditorRevealType.InCenterIfOutsideViewport);
+  }
+  vscode.window.showErrorMessage('DaCode: ' + reason);
+}
+
+function errorHint(reason) {
+  if (reason.includes('reserved DaCode word')) {
+    return 'Зарезервированное слово нельзя использовать как имя переменной. Переименуй переменную, например в input_error.';
+  }
+  if (reason.includes('Input type error: expected')) {
+    return 'Введённое значение не соответствует типу, который указан вторым параметром input().';
+  }
+  if (reason.includes('Type error: expected')) {
+    return 'Значение не соответствует строгому типу переменной или return.back().';
+  }
+  if (reason.includes('is not defined in this container')) {
+    return 'Переменная недоступна в этом контейнере или ещё не была объявлена.';
+  }
+  if (reason.includes('require remem or remember')) {
+    return 'Функции и классы в DaCode объявляются только через remem/remember.';
+  }
+  if (reason.includes('straight(start)')) {
+    return 'straight(start) должен быть самым первым оператором программы.';
+  }
+  if (reason.includes('straight(finish)')) {
+    return 'straight(finish) должен быть самым последним оператором программы.';
+  }
+  return null;
 }
 
 function buildIndentationRules(spec) {

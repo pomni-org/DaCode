@@ -21,6 +21,20 @@ def execute(source, inputs=None, interpreter=None):
 
 
 class RuntimeTests(unittest.TestCase):
+    def test_remem_is_allowed_for_variables(self):
+        self.assertEqual(execute('remem name="Дак"\nconsole(name)\n'), ['Дак'])
+        self.assertEqual(execute('remember numb age=20\nconsole(age)\n'), ['20'])
+
+    def test_straight_start_finish_are_control_markers(self):
+        self.assertEqual(
+            execute('straight(start)\nconsole("ok")\nstraight(finish)\n'),
+            ['ok'],
+        )
+
+    def test_reserved_keyword_assignment_has_clear_error(self):
+        with self.assertRaisesRegex(Exception, "reserved DaCode word"):
+            Parser(Lexer('error = straight(error)\n').tokenize()).parse()
+
     def test_result_depends_on_source(self):
         self.assertEqual(execute('console(2+3)\n'), ['5'])
         self.assertEqual(execute('console(7*6)\n'), ['42'])

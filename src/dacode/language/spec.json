@@ -186,16 +186,32 @@
       "label": "random",
       "kind": "function",
       "insertText": "random(${1:1}-${2:10})"
+    },
+    {
+      "label": "remem variable",
+      "kind": "keyword",
+      "insertText": "remem ${1:name} = ${2:Void}"
+    },
+    {
+      "label": "straight(start)",
+      "kind": "function",
+      "insertText": "straight(start)"
+    },
+    {
+      "label": "straight(finish)",
+      "kind": "function",
+      "insertText": "straight(finish)"
     }
   ],
   "hover": {
     "Void": "**Void** — compound-пустота. Не является `false` и не участвует в арифметике/условиях.",
-    "straight": "**straight()** — выйти из текущей конструкции. `straight(error)` обрабатывает ошибку предыдущей операции.",
+    "straight": "**straight()** — управление выполнением. `straight(error)` обрабатывает ошибку предыдущей операции; `straight(start)` первым оператором скрывает служебную строку запуска; `straight(finish)` последним оператором скрывает служебную строку завершения.",
     "return.back": "**return.back(value) type** — вернуть значение из функции и при наличии типа проверить его.",
     "first": "**first.value** — родительское значение класса/контейнера.",
     "twice": "**twice.value** — получить независимую копию соответствующего `first.value` из другого контейнера.",
     "block": "**block** — запретить дальнейшее изменение переменной.",
-    "numb.float": "**numb.float** — составной числовой тип для числа с плавающей точкой."
+    "numb.float": "**numb.float** — составной числовой тип для числа с плавающей точкой.",
+    "remem": "**remem / remember** — объявление, которое можно использовать для переменных и обязательно нужно для функций и классов."
   },
   "strings": {
     "quotes": [

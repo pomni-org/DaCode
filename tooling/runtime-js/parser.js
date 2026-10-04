@@ -38,10 +38,47 @@ class Parser {
       statements.push(this.statement());
       this.skipNewlines();
     }
+    this.validateOutputControls(statements, true);
     return node('Program', { statements });
   }
 
+  validateOutputControls(statements, topLevel) {
+    for (let index = 0; index < statements.length; index++) {
+      const stmt = statements[index];
+      if (stmt.kind === 'StraightStmt' && stmt.controlMode) {
+        if (!topLevel) {
+          throw this.error(`straight(${stmt.controlMode}) is only allowed at the top level`, {line:stmt.line, col:1});
+        }
+        if (stmt.controlMode === 'start' && index !== 0) {
+          throw this.error('straight(start) must be the first program statement', {line:stmt.line, col:1});
+        }
+        if (stmt.controlMode === 'finish' && index !== statements.length - 1) {
+          throw this.error('straight(finish) must be the last program statement', {line:stmt.line, col:1});
+        }
+      }
+      const nested = [];
+      if (stmt.kind === 'IfStmt') {
+        for (const branch of stmt.branches) nested.push(branch.body);
+        nested.push(stmt.elseBody);
+      } else if (['WhileStmt','ForStmt','FuncDef','ClassDef'].includes(stmt.kind)) {
+        nested.push(stmt.body);
+      }
+      for (const body of nested) this.validateOutputControls(body, false);
+    }
+  }
+
   statement() {
+    if (this.cur().kind === 'KW' && this.peek().value === '=') {
+      const t = this.cur();
+      throw this.error(
+        `'${t.value}' is a reserved DaCode word and cannot be used as a variable name. Choose another name, for example input_error.`,
+        t
+      );
+    }
+    if (this.at('func') || this.at('class')) {
+      const t = this.cur();
+      throw this.error(`${t.value} declarations require remem or remember`, t);
+    }
     if (this.at('if')) return this.parseIf();
     if (this.at('while')) return this.parseWhile();
     if (this.at('for')) return this.parseFor();
@@ -71,6 +108,7 @@ class Parser {
       const assignTo = this.expect(null, 'IDENT').value;
       this.expect('=');
       const stmt = this.parseStraight();
+      if (!stmt.errorMode) throw this.error('Only straight(error) can be assigned to a variable');
       stmt.assignTo = assignTo;
       return stmt;
     }
@@ -161,18 +199,23 @@ class Parser {
       this.expect(':'); this.endline();
       return node('ClassDef', { name, body: this.block(), remembered: true, line: start.line });
     }
-    this.expect('func');
-    const name = this.expect(null, 'IDENT').value;
-    this.expect('(');
-    const params = [];
-    if (!this.at(')')) {
-      while (true) {
-        params.push(this.parseParam());
-        if (!this.match(',')) break;
+    if (this.match('func')) {
+      const name = this.expect(null, 'IDENT').value;
+      this.expect('(');
+      const params = [];
+      if (!this.at(')')) {
+        while (true) {
+          params.push(this.parseParam());
+          if (!this.match(',')) break;
+        }
       }
+      this.expect(')'); this.expect(':'); this.endline();
+      return node('FuncDef', { name, params, body: this.block(), remembered: true, line: start.line });
     }
-    this.expect(')'); this.expect(':'); this.endline();
-    return node('FuncDef', { name, params, body: this.block(), remembered: true, line: start.line });
+    if (this.at(null, 'IDENT') || this.at('block') || this.looksLikeTypedAssignment()) {
+      return this.parseAssignment();
+    }
+    throw this.error(`${start.value} must be followed by a variable, func, or class declaration`);
   }
 
   parseParam() {
@@ -250,9 +293,18 @@ class Parser {
   parseStraight() {
     const start = this.expect('straight'); this.expect('(');
     let errorMode = false;
-    if (!this.at(')')) { this.expect('error'); errorMode = true; }
+    let controlMode = null;
+    if (!this.at(')')) {
+      const arg = this.expect().value;
+      if (arg === 'error') errorMode = true;
+      else if (arg === 'start' || arg === 'finish') controlMode = arg;
+      else throw this.error(
+        `straight() does not support '${arg}'; use error, start, finish, or no argument`,
+        start
+      );
+    }
     this.expect(')'); this.endline();
-    return node('StraightStmt', { errorMode, assignTo: null, line: start.line });
+    return node('StraightStmt', { errorMode, controlMode, assignTo: null, line: start.line });
   }
 
   parseSimple(kind) {

@@ -47,9 +47,52 @@ class Parser:
         while not self.at(kind="EOF"):
             out.append(self.statement())
             self.skip_newlines()
+        self._validate_output_controls(out, top_level=True)
         return Program(out)
 
+    def _validate_output_controls(self, statements: list[Stmt], top_level: bool) -> None:
+        for index, statement in enumerate(statements):
+            if isinstance(statement, StraightStmt) and statement.control_mode:
+                mode = statement.control_mode
+                if not top_level:
+                    raise ParseError(
+                        f"straight({mode}) is only allowed at the top level "
+                        f"(line {statement.line})"
+                    )
+                if mode == "start" and index != 0:
+                    raise ParseError(
+                        f"straight(start) must be the first program statement "
+                        f"(line {statement.line})"
+                    )
+                if mode == "finish" and index != len(statements) - 1:
+                    raise ParseError(
+                        f"straight(finish) must be the last program statement "
+                        f"(line {statement.line})"
+                    )
+
+            nested: list[list[Stmt]] = []
+            if isinstance(statement, IfStmt):
+                nested.extend(body for _, body in statement.branches)
+                nested.append(statement.else_body)
+            elif isinstance(statement, (WhileStmt, ForStmt, FuncDef, ClassDef)):
+                nested.append(statement.body)
+            for body in nested:
+                self._validate_output_controls(body, top_level=False)
+
     def statement(self) -> Stmt:
+        if self.cur().kind == "KW" and self.peek().value == "=":
+            tok = self.cur()
+            raise ParseError(
+                f"{tok.value!r} is a reserved DaCode word and cannot be used "
+                f"as a variable name at {tok.line}:{tok.col}. "
+                f"Choose another name, for example input_error."
+            )
+        if self.at("func") or self.at("class"):
+            tok = self.cur()
+            raise ParseError(
+                f"{tok.value} declarations require remem or remember "
+                f"at {tok.line}:{tok.col}"
+            )
         if self.at("if"): return self.parse_if()
         if self.at("while"): return self.parse_while()
         if self.at("for"): return self.parse_for()
@@ -79,6 +122,8 @@ class Parser:
             name = self.expect(kind="IDENT").value
             self.expect("=")
             st = self.parse_straight()
+            if not st.error_mode:
+                raise ParseError("Only straight(error) can be assigned to a variable")
             st.assign_to = name
             return st
 
@@ -149,21 +194,30 @@ class Parser:
         self.expect("for"); name = self.expect(kind="IDENT").value; self.expect("in"); it = self.expression(); self.expect(":"); self.endline(); return ForStmt(name, it, self.block())
 
     def parse_remem(self):
-        self.expect()
+        start = self.expect()
         if self.match("class"):
             name = self.expect(kind="IDENT").value
             self.expect(":"); self.endline()
             return ClassDef(name, self.block(), remembered=True)
-        self.expect("func")
-        name = self.expect(kind="IDENT").value
-        self.expect("(")
-        params = []
-        if not self.at(")"):
-            while True:
-                params.append(self.parse_param())
-                if not self.match(","): break
-        self.expect(")"); self.expect(":"); self.endline()
-        return FuncDef(name, params, self.block(), remembered=True)
+        if self.match("func"):
+            name = self.expect(kind="IDENT").value
+            self.expect("(")
+            params = []
+            if not self.at(")"):
+                while True:
+                    params.append(self.parse_param())
+                    if not self.match(","): break
+            self.expect(")"); self.expect(":"); self.endline()
+            return FuncDef(name, params, self.block(), remembered=True)
+
+        if self.at(kind="IDENT") or self.at("block") or self._looks_like_typed_assignment():
+            return self.parse_assignment()
+
+        tok = self.cur()
+        raise ParseError(
+            f"{start.value} must be followed by a variable, func, or class "
+            f"declaration at {tok.line}:{tok.col}"
+        )
 
     def parse_return_back(self):
         self.expect("return")
@@ -246,11 +300,26 @@ class Parser:
         self.expect("error"); self.expect("("); expr = self.expression(); self.expect(")"); self.endline(); return ErrorStmt(expr)
 
     def parse_straight(self):
-        self.expect("straight"); self.expect("(")
-        mode = False
+        start = self.expect("straight"); self.expect("(")
+        error_mode = False
+        control_mode = None
         if not self.at(")"):
-            self.expect("error"); mode = True
-        self.expect(")"); self.endline(); return StraightStmt(error_mode=mode)
+            arg = self.expect().value
+            if arg == "error":
+                error_mode = True
+            elif arg in {"start", "finish"}:
+                control_mode = arg
+            else:
+                raise ParseError(
+                    f"straight() does not support {arg!r} at "
+                    f"{start.line}:{start.col}; use error, start, finish, or no argument"
+                )
+        self.expect(")"); self.endline()
+        return StraightStmt(
+            error_mode=error_mode,
+            control_mode=control_mode,
+            line=start.line,
+        )
 
     def parse_simple_call_stmt(self, cls):
         self.expect(); self.expect("("); self.expect(")"); self.endline(); return cls()

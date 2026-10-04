@@ -2,7 +2,7 @@
   "name": "dacode-language",
   "displayName": "DaCode",
   "description": "DaCode support for VS Code. Language rules and runtime are synchronized from pomni-org/DaCode.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "pomni-org",
   "license": "MIT",
   "engines": {

@@ -111,6 +111,8 @@ class StatementExecutorMixin:
             raise FunctionReturn(value)
 
         if isinstance(statement, StraightStmt):
+            if statement.control_mode:
+                return
             if statement.error_mode:
                 value = self.last_error
                 self.last_error = None

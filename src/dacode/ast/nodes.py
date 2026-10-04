@@ -166,7 +166,9 @@ class ReturnBackStmt(Stmt):
 @dataclass
 class StraightStmt(Stmt):
     error_mode: bool = False
+    control_mode: Optional[str] = None
     assign_to: Optional[str] = None
+    line: Optional[int] = None
 
 
 @dataclass

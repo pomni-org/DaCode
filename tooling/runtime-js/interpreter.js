@@ -214,6 +214,7 @@ class Interpreter {
         throw new FunctionReturn(value);
       }
       case 'StraightStmt': {
+        if (stmt.controlMode) return;
         if (stmt.errorMode) {
           const value = this.lastError;
           this.lastError = null;
