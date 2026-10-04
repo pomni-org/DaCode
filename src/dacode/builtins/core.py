@@ -11,7 +11,9 @@ TYPE_MARKERS = ("numb", "text", "bool", "list", "dict", "compound", "error")
 def install_core_builtins(interpreter) -> None:
     interpreter.register_builtin("random", RandomNamespace())
     interpreter.register_builtin("os", OSNamespace())
-    interpreter.register_builtin("log", LogNamespace(interpreter.stdout))
+    # `log` is also a common variable name. Keep the logging namespace available
+    # by default, but allow an explicit assignment to shadow it.
+    interpreter.register_builtin("log", LogNamespace(interpreter.stdout), blocked=False)
     interpreter.register_builtin("range", lambda a, b=None: list(range(a, b)) if b is not None else list(range(1, a)))
     interpreter.register_builtin("console", interpreter.console)
     interpreter.register_builtin("input", interpreter.input_value)

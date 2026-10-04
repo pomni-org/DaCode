@@ -25,6 +25,12 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(execute('remem name="Дак"\nconsole(name)\n'), ['Дак'])
         self.assertEqual(execute('remember numb age=20\nconsole(age)\n'), ['20'])
 
+    def test_log_is_allowed_as_an_input_variable(self):
+        self.assertEqual(
+            execute('log = input("Enter log message: ", text)\nconsole(log)\n', ['saved']),
+            ['saved'],
+        )
+
     def test_straight_start_finish_are_control_markers(self):
         self.assertEqual(
             execute('straight(start)\nconsole("ok")\nstraight(finish)\n'),

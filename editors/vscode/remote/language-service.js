@@ -60,7 +60,10 @@ class LanguageModel {
         const value=word[0]; let type='variable';
         if(this.keywords.has(value)||this.literals.has(value)||this.special.has(value)) type='keyword';
         else if(this.types.has(value)||(value==='float'&&source.slice(Math.max(0,i-5),i)==='numb.')) type='type';
-        else if(this.builtins.has(value)) type='function';
+        else if(this.builtins.has(value)) {
+          const rest=source.slice(i+value.length).trimStart();
+          type=rest.startsWith('=')?'variable':'function';
+        }
         if(afterRemem&&type==='variable'){
           const rest=source.slice(i+value.length).trimStart();
           if(rest.startsWith('(')) type='function';

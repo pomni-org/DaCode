@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.4
+
+- Restored always-available baseline syntax highlighting while the GitHub-backed semantic client starts or works offline.
+- Allowed `log` to be used as a normal variable name, including `log = input(..., text)`.
+
 ## 0.5.3
 
 - Rebuilt both icon sizes from the complete original DaCode artwork without cropping.

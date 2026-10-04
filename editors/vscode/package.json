@@ -2,7 +2,7 @@
   "name": "dacode-programming-language",
   "displayName": "DaCode Language by Pomni",
   "description": "Thin DaCode bootstrap for VS Code. Client behavior, language rules and runtime are synchronized from pomni-org/DaCode on GitHub.",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "publisher": "pomni-org",
   "license": "MIT",
   "engines": {
@@ -37,6 +37,13 @@
           "light": "./assets/dacode-file.png",
           "dark": "./assets/dacode-file.png"
         }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "dacode",
+        "scopeName": "source.dacode",
+        "path": "./syntaxes/dacode.tmLanguage.json"
       }
     ],
     "commands": [

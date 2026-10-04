@@ -1,0 +1,111 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "DaCode",
+  "scopeName": "source.dacode",
+  "patterns": [
+    { "include": "#block-comments" },
+    { "include": "#line-comments" },
+    { "include": "#strings" },
+    { "include": "#assignment-names" },
+    { "include": "#keywords" },
+    { "include": "#types" },
+    { "include": "#builtins" },
+    { "include": "#numbers" },
+    { "include": "#operators" }
+  ],
+  "repository": {
+    "block-comments": {
+      "patterns": [
+        {
+          "name": "comment.block.dacode",
+          "begin": "\"\"\"",
+          "end": "\"\"\""
+        }
+      ]
+    },
+    "line-comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.dacode",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.dacode",
+          "begin": "w?\"",
+          "end": "\"",
+          "patterns": [
+            { "name": "constant.character.escape.dacode", "match": "\\\\." }
+          ]
+        },
+        {
+          "name": "string.quoted.single.dacode",
+          "begin": "w?'",
+          "end": "'",
+          "patterns": [
+            { "name": "constant.character.escape.dacode", "match": "\\\\." }
+          ]
+        }
+      ]
+    },
+    "assignment-names": {
+      "patterns": [
+        {
+          "name": "variable.other.assignment.dacode",
+          "match": "\\b[\\p{L}_][\\p{L}\\p{N}_]*(?=\\s*=)"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.dacode",
+          "match": "\\b(?:if|elif|else|while|for|in|remem|remember|and|or|not|block|exit|error|straight|open|close|from|import)\\b"
+        },
+        {
+          "name": "constant.language.dacode",
+          "match": "\\b(?:true|false|Void)\\b"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "storage.type.dacode",
+          "match": "\\b(?:text|numb(?:\\.float)?|bool|list|dict|compound|error)\\b"
+        }
+      ]
+    },
+    "builtins": {
+      "patterns": [
+        {
+          "name": "support.function.builtin.dacode",
+          "match": "\\b(?:console|input|return|random|range|clear|read|write|delete|replace|find|log|os)\\b(?=\\s*(?:\\.|\\())"
+        },
+        {
+          "name": "variable.language.dacode",
+          "match": "\\b(?:first|twice)\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.dacode",
+          "match": "\\b\\d+(?:\\.\\d+)?\\b"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.dacode",
+          "match": "==|!=|<=|>=|//|\\*\\*|->|[+\\-*/%=<>&]"
+        }
+      ]
+    }
+  }
+}

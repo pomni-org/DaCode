@@ -100,7 +100,9 @@ class Interpreter {
     this.registerBuiltin('random', random);
     this.registerBuiltin('os', osNamespace);
     this.registerBuiltin('clear', async () => this.host.clear());
-    this.registerBuiltin('log', log);
+    // `log` is also a common variable name. An explicit assignment may shadow
+    // the logging namespace, matching the Python runtime.
+    this.registerBuiltin('log', log, false);
 
     this.registerBuiltin('read', async ref => this.readFile(ref));
     this.registerBuiltin('write', async (ref, line, value) => this.writeFile(ref, line, value));

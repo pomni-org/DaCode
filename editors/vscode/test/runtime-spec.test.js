@@ -27,6 +27,25 @@ test('remem works for variables and output controls are parsed', async () => {
   assert.equal(program.statements[1].kind, 'Assignment');
 });
 
+test('log can be used as an input variable', async () => {
+  const output = [];
+  const host = {
+    write: value => output.push(String(value)),
+    clear() {},
+    async input() { return 'saved'; },
+  };
+  await runtime.execute(
+    'log = input("Enter log message: ", text)\nconsole(log)\n',
+    host,
+    process.cwd(),
+    {
+      keywords: [], literals: ['true', 'false', 'Void'],
+      types: {direct:['numb','text','bool','list','dict','error'], compound:['compound'], subtypes:['numb.float']},
+    },
+  );
+  assert.deepEqual(output, ['saved']);
+});
+
 test('reserved keyword variable name produces a useful error', () => {
   const spec = {
     keywords: ['error', 'straight'],
