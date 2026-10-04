@@ -119,5 +119,6 @@
   "homepage": "https://github.com/pomni-org/DaCode/tree/main/editors/vscode",
   "bugs": {
     "url": "https://github.com/pomni-org/DaCode/issues"
-  }
+  },
+  "pricing": "Free"
 }
