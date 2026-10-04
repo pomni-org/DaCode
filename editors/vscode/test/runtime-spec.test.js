@@ -64,3 +64,8 @@ test('triple quote comments are ignored by runtime lexer', () => {
   );
   assert.equal(program.statements.length, 2);
 });
+
+test('GitHub client module loads and exports createClient', () => {
+  const client = require('../remote/client');
+  assert.equal(typeof client.createClient, 'function');
+});
