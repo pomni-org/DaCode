@@ -1,0 +1,14 @@
+remem class Parent:
+    first.name = "Иван"
+    first.age = 20
+
+remem class Child:
+    twice.name
+    twice.age
+
+parent = Parent()
+child = Child()
+child.name = "Пётр"
+console(parent.name)
+console(child.name)
+console(child.age)

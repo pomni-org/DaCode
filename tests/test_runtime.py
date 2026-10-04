@@ -1,0 +1,108 @@
+import tempfile
+import unittest
+from pathlib import Path
+
+from dacode.frontend import Lexer, Parser
+from dacode.loader import discover_dc
+from dacode.runtime import DaCodeRuntimeError, Interpreter
+
+
+def execute(source, inputs=None, interpreter=None):
+    output = []
+    values = iter(inputs or [])
+    runtime = interpreter or Interpreter(
+        stdin=lambda prompt="": next(values),
+        stdout=lambda value="": output.append(str(value)),
+    )
+    if interpreter is not None:
+        runtime.stdout = lambda value="": output.append(str(value))
+    runtime.run(Parser(Lexer(source).tokenize()).parse())
+    return output
+
+
+class RuntimeTests(unittest.TestCase):
+    def test_result_depends_on_source(self):
+        self.assertEqual(execute('console(2+3)\n'), ['5'])
+        self.assertEqual(execute('console(7*6)\n'), ['42'])
+        self.assertEqual(
+            execute('name="Дак"\nconsole(w"Привет, {name}")\n'),
+            ['Привет, Дак'],
+        )
+
+    def test_one_based_index(self):
+        self.assertEqual(execute('a=["x","y"]\nconsole(a[1])\n'), ['x'])
+
+    def test_void_cannot_be_condition(self):
+        with self.assertRaises(DaCodeRuntimeError):
+            execute('a=Void\nif a:\n    console("x")\n')
+
+    def test_void_can_be_replaced_untyped(self):
+        self.assertEqual(execute('a=Void\na=2\nconsole(a)\n'), ['2'])
+
+    def test_straight_error_is_postfix(self):
+        source = (
+            'age=input("", numb)\n'
+            'err=straight(error)\n'
+            'if err:\n'
+            '    console("bad")\n'
+            'else:\n'
+            '    console(age)\n'
+        )
+        self.assertEqual(execute(source, ['кот']), ['bad'])
+        self.assertEqual(execute(source, ['18']), ['18'])
+
+    def test_return_back_typed(self):
+        source = (
+            'remem func add(numb=a, numb=b):\n'
+            '    return.back(a+b) numb\n'
+            'console(add(2,3))\n'
+        )
+        self.assertEqual(execute(source), ['5'])
+
+    def test_type_error(self):
+        with self.assertRaises(DaCodeRuntimeError):
+            execute('numb a=2\na="cat"\n')
+
+    def test_dc_discovery_uses_extension_not_fixed_filename(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'reactor.dc').write_text('console(1)\n', encoding='utf-8')
+            (root / 'cat.dc').write_text('console(2)\n', encoding='utf-8')
+            (root / 'main.txt').write_text('console(999)\n', encoding='utf-8')
+            self.assertEqual(
+                [path.name for path in discover_dc(root)],
+                ['cat.dc', 'reactor.dc'],
+            )
+
+    def test_multiline_call(self):
+        source = 'a = return(\n    10+20\n)\nconsole(a)\n'
+        self.assertEqual(execute(source), ['30'])
+
+    def test_straight_skips_function(self):
+        source = (
+            'remem func f():\n'
+            '    console("before")\n'
+            '    straight()\n'
+            '    console("after")\n'
+            'f()\n'
+            'console("done")\n'
+        )
+        self.assertEqual(execute(source), ['before', 'done'])
+
+    def test_first_twice_copy_is_independent(self):
+        source = (
+            'remem class P:\n'
+            '    first.name="Иван"\n'
+            'remem class C:\n'
+            '    twice.name\n'
+            'p=P()\n'
+            'c=C()\n'
+            'c.name="Пётр"\n'
+            'console(p.name)\n'
+            'console(c.name)\n'
+        )
+        self.assertEqual(execute(source), ['Иван', 'Пётр'])
+
+
+if __name__ == '__main__':
+    unittest.main()

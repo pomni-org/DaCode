@@ -1,0 +1,5 @@
+block+numb max_number = 10
+number = random(1-10)
+console(w"Случайное число: {number}")
+a = return(10+20)
+console(w"10 + 20 = {a}")

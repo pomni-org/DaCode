@@ -1,0 +1,3 @@
+from loading import loading = load
+console(load())
+console(loading())

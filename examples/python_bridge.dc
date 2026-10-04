@@ -1,0 +1,3 @@
+from python import math.sqrt = root
+value = root(144)
+console(w"Корень: {value}")

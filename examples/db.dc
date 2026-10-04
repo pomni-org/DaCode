@@ -1,0 +1,5 @@
+import data/DB.txt = db
+data = read(db): split("-")
+console(data[1][1])
+console(data[1][2])
+console(find(db, "Мурка"))

@@ -1,0 +1,6 @@
+age = input("Возраст: ", numb)
+input_error = straight(error)
+if input_error != Void:
+    console(red: "Нужно ввести число")
+else:
+    console(w"Возраст: {age}")

@@ -1,0 +1,2 @@
+name = "Дак"
+console(w"Привет, {name}")

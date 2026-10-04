@@ -1,0 +1,17 @@
+block+numb max_number = 10
+number = random(1-max_number)
+while true:
+    guess = input(
+        w"Угадай число от 1 до {max_number}: ",
+        numb
+    )
+    input_error = straight(error)
+    if input_error:
+        console(red: "Нужно ввести число")
+    else:
+        if guess < number:
+            console("Больше")
+        if guess > number:
+            console("Меньше")
+        if guess == number:
+            exit("Угадал!")
