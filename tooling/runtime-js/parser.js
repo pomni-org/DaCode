@@ -75,10 +75,6 @@ class Parser {
         t
       );
     }
-    if (this.at('func') || this.at('class')) {
-      const t = this.cur();
-      throw this.error(`${t.value} declarations require remem or remember`, t);
-    }
     if (this.at('if')) return this.parseIf();
     if (this.at('while')) return this.parseWhile();
     if (this.at('for')) return this.parseFor();
@@ -194,14 +190,18 @@ class Parser {
 
   parseRemem() {
     const start = this.expect();
-    if (this.match('class')) {
-      const name = this.expect(null, 'IDENT').value;
-      this.expect(':'); this.endline();
-      return node('ClassDef', { name, body: this.block(), remembered: true, line: start.line });
+
+    if (this.at('block') || this.looksLikeTypedAssignment()) {
+      return this.parseAssignment();
     }
-    if (this.match('func')) {
-      const name = this.expect(null, 'IDENT').value;
-      this.expect('(');
+
+    if (!this.at(null, 'IDENT')) {
+      throw this.error(`${start.value} must be followed by a name`);
+    }
+
+    const name = this.expect(null, 'IDENT').value;
+
+    if (this.match('(')) {
       const params = [];
       if (!this.at(')')) {
         while (true) {
@@ -212,10 +212,22 @@ class Parser {
       this.expect(')'); this.expect(':'); this.endline();
       return node('FuncDef', { name, params, body: this.block(), remembered: true, line: start.line });
     }
-    if (this.at(null, 'IDENT') || this.at('block') || this.looksLikeTypedAssignment()) {
-      return this.parseAssignment();
+
+    if (this.match(':')) {
+      this.endline();
+      return node('ClassDef', { name, body: this.block(), remembered: true, line: start.line });
     }
-    throw this.error(`${start.value} must be followed by a variable, func, or class declaration`);
+
+    if (this.match('=')) {
+      let expr = this.expression();
+      expr = this.maybeReadTransform(expr);
+      this.endline();
+      return node('Assignment', { name, expr, typeSpec:null, blocked:false, line:start.line });
+    }
+
+    throw this.error(
+      `After ${start.value} ${name}, expected '(', ':' or '='. Use ${start.value} name(): for a function, ${start.value} Name: for a class, or ${start.value} name = value for a variable.`
+    );
   }
 
   parseParam() {

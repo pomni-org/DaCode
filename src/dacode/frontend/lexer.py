@@ -3,9 +3,9 @@ from .tokens import Token
 
 
 KEYWORDS = {
-    "if", "elif", "else", "while", "for", "in", "remem", "remember", "func",
+    "if", "elif", "else", "while", "for", "in", "remem", "remember",
     "true", "false", "Void", "and", "or", "not", "block", "exit", "error",
-    "straight", "open", "close", "from", "import", "class",
+    "straight", "open", "close", "from", "import",
 }
 
 
@@ -13,9 +13,28 @@ class LexerError(Exception):
     pass
 
 
+def _strip_block_comments(source: str) -> str:
+    out: list[str] = []
+    i = 0
+    in_comment = False
+    while i < len(source):
+        if source.startswith('"""', i):
+            in_comment = not in_comment
+            out.extend("   ")
+            i += 3
+            continue
+        char = source[i]
+        out.append("\n" if in_comment and char == "\n" else (" " if in_comment else char))
+        i += 1
+    if in_comment:
+        raise LexerError('Unclosed block comment: expected closing """')
+    return "".join(out)
+
+
 class Lexer:
     def __init__(self, source: str):
-        self.source = source.replace("\r\n", "\n").replace("\r", "\n")
+        normalized = source.replace("\r\n", "\n").replace("\r", "\n")
+        self.source = _strip_block_comments(normalized)
 
     def tokenize(self) -> list[Token]:
         tokens: list[Token] = []

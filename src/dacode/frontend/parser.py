@@ -87,12 +87,6 @@ class Parser:
                 f"as a variable name at {tok.line}:{tok.col}. "
                 f"Choose another name, for example input_error."
             )
-        if self.at("func") or self.at("class"):
-            tok = self.cur()
-            raise ParseError(
-                f"{tok.value} declarations require remem or remember "
-                f"at {tok.line}:{tok.col}"
-            )
         if self.at("if"): return self.parse_if()
         if self.at("while"): return self.parse_while()
         if self.at("for"): return self.parse_for()
@@ -195,13 +189,20 @@ class Parser:
 
     def parse_remem(self):
         start = self.expect()
-        if self.match("class"):
-            name = self.expect(kind="IDENT").value
-            self.expect(":"); self.endline()
-            return ClassDef(name, self.block(), remembered=True)
-        if self.match("func"):
-            name = self.expect(kind="IDENT").value
-            self.expect("(")
+
+        if self.at("block") or self._looks_like_typed_assignment():
+            return self.parse_assignment()
+
+        if not self.at(kind="IDENT"):
+            tok = self.cur()
+            raise ParseError(
+                f"{start.value} must be followed by a name at "
+                f"{tok.line}:{tok.col}"
+            )
+
+        name = self.expect(kind="IDENT").value
+
+        if self.match("("):
             params = []
             if not self.at(")"):
                 while True:
@@ -210,13 +211,22 @@ class Parser:
             self.expect(")"); self.expect(":"); self.endline()
             return FuncDef(name, params, self.block(), remembered=True)
 
-        if self.at(kind="IDENT") or self.at("block") or self._looks_like_typed_assignment():
-            return self.parse_assignment()
+        if self.match(":"):
+            self.endline()
+            return ClassDef(name, self.block(), remembered=True)
+
+        if self.match("="):
+            expr = self.expression()
+            expr = self.maybe_read_transform(expr)
+            self.endline()
+            return Assignment(name, expr)
 
         tok = self.cur()
         raise ParseError(
-            f"{start.value} must be followed by a variable, func, or class "
-            f"declaration at {tok.line}:{tok.col}"
+            f"After {start.value} {name}, expected '(', ':' or '=' at "
+            f"{tok.line}:{tok.col}. Use {start.value} name(): for a function, "
+            f"{start.value} Name: for a class, or {start.value} name = value "
+            f"for a variable."
         )
 
     def parse_return_back(self):

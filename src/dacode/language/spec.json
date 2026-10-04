@@ -9,7 +9,11 @@
     "sourceExtension": ".dc"
   },
   "comments": {
-    "line": "#"
+    "line": "#",
+    "block": [
+      "\"\"\"",
+      "\"\"\""
+    ]
   },
   "brackets": [
     [
@@ -56,8 +60,6 @@
     "in",
     "remem",
     "remember",
-    "func",
-    "class",
     "and",
     "or",
     "not",
@@ -138,6 +140,16 @@
   ],
   "completion": [
     {
+      "label": "remem function",
+      "kind": "function",
+      "insertText": "remem ${1:name}(${2}):\\n    ${0}"
+    },
+    {
+      "label": "remem class",
+      "kind": "class",
+      "insertText": "remem ${1:Name}:\\n    first.${2:value} = ${3:Void}"
+    },
+    {
       "label": "if",
       "kind": "keyword",
       "insertText": "if ${1:condition}:\n    ${0}"
@@ -151,16 +163,6 @@
       "label": "for",
       "kind": "keyword",
       "insertText": "for ${1:item} in ${2:items}:\n    ${0}"
-    },
-    {
-      "label": "remem func",
-      "kind": "function",
-      "insertText": "remem func ${1:name}(${2}):\n    ${0}"
-    },
-    {
-      "label": "remem class",
-      "kind": "class",
-      "insertText": "remem class ${1:Name}:\n    first.${2:value} = ${3:Void}"
     },
     {
       "label": "return.back",
@@ -211,7 +213,7 @@
     "twice": "**twice.value** — получить независимую копию соответствующего `first.value` из другого контейнера.",
     "block": "**block** — запретить дальнейшее изменение переменной.",
     "numb.float": "**numb.float** — составной числовой тип для числа с плавающей точкой.",
-    "remem": "**remem / remember** — объявление, которое можно использовать для переменных и обязательно нужно для функций и классов."
+    "remem": "**remem / remember** — обязательное объявление функции (`remem name():`) и класса (`remem Name:`), а для переменной — необязательное (`remem name = value`)."
   },
   "strings": {
     "quotes": [
@@ -221,8 +223,13 @@
     "smartPrefix": "w"
   },
   "declarations": {
-    "functionKeyword": "func",
-    "classKeyword": "class"
+    "rememberKeywords": [
+      "remem",
+      "remember"
+    ],
+    "functionShape": "remem name(...):",
+    "classShape": "remem Name:",
+    "variableShape": "remem name = value"
   },
   "indentation": {
     "blockSuffix": ":",

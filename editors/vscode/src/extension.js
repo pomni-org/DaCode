@@ -115,7 +115,10 @@ function applyRevision(revision) {
   if (languageConfigurationDisposable) languageConfigurationDisposable.dispose();
   const spec = revision.spec;
   languageConfigurationDisposable = vscode.languages.setLanguageConfiguration('dacode', {
-    comments: {lineComment: spec.comments?.line || '#'},
+    comments: {
+      lineComment: spec.comments?.line || '#',
+      blockComment: spec.comments?.block || ['"""', '"""'],
+    },
     brackets: spec.brackets || [['(', ')'], ['[', ']'], ['{', '}']],
     autoClosingPairs: (spec.autoClosingPairs || []).map(([open, close]) => ({open, close})),
     surroundingPairs: (spec.autoClosingPairs || []).map(([open, close]) => ({open, close})),

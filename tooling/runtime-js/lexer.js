@@ -4,10 +4,28 @@ const { DaCodeRuntimeError } = require('./values');
 const isLetter = ch => !!ch && /[\p{L}_]/u.test(ch);
 const isWord = ch => !!ch && /[\p{L}\p{N}_]/u.test(ch);
 
+function stripBlockComments(source) {
+  let out = '';
+  let i = 0;
+  let inComment = false;
+  while (i < source.length) {
+    if (source.startsWith('"""', i)) {
+      inComment = !inComment;
+      out += '   ';
+      i += 3;
+      continue;
+    }
+    const ch = source[i++];
+    out += inComment ? (ch === '\n' ? '\n' : ' ') : ch;
+  }
+  if (inComment) throw new DaCodeRuntimeError('Unclosed block comment: expected closing """');
+  return out;
+}
+
 class Lexer {
   constructor(source, spec = null) {
-    this.source = String(source).replace(/\r\n?/g, '\n');
-    const fallback = ['if','elif','else','while','for','in','remem','remember','func','class','true','false','Void','and','or','not','block','exit','error','straight','open','close','from','import'];
+    this.source = stripBlockComments(String(source).replace(/\r\n?/g, '\n'));
+    const fallback = ['if','elif','else','while','for','in','remem','remember','true','false','Void','and','or','not','block','exit','error','straight','open','close','from','import'];
     this.keywords = new Set(spec ? [...(spec.keywords || []), ...(spec.literals || [])] : fallback);
   }
 
