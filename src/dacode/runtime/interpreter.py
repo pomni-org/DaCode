@@ -1,5 +1,6 @@
 from __future__ import annotations
 import os
+import signal
 from typing import Any
 from dacode.ast.nodes import Program
 from dacode.bridges import BridgeRegistry, default_bridge_registry
@@ -49,12 +50,27 @@ class Interpreter(EvaluatorMixin, StatementExecutorMixin):
         self.bridges.register(bridge)
 
     def run(self, program: Program):
+        previous_handler = None
+        keyboard = getattr(self, "keyboard_input", None)
+        try:
+            previous_handler = signal.getsignal(signal.SIGINT)
+            def handle_interrupt(signum, frame):
+                if keyboard and keyboard.is_captured("ctrl+c"):
+                    keyboard.pulse("ctrl+c")
+                    return
+                raise KeyboardInterrupt
+            signal.signal(signal.SIGINT, handle_interrupt)
+        except (ValueError, AttributeError):
+            previous_handler = None
         try:
             self.exec_block(program.statements, self.global_env)
         except ProgramExit as exited:
             if exited.value is not None and exited.value is not VOID:
                 self.stdout(exited.value)
             return exited.value
+        finally:
+            if previous_handler is not None:
+                signal.signal(signal.SIGINT, previous_handler)
         return VOID
 
     def console(self, *args):

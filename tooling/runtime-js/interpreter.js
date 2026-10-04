@@ -103,6 +103,15 @@ class Interpreter {
     // `log` is also a common variable name. An explicit assignment may shadow
     // the logging namespace, matching the Python runtime.
     this.registerBuiltin('log', log, false);
+    const keyboard = {
+      pressed: async key => Boolean(await this.host.keyPressed?.(String(key))),
+      capture: async key => Boolean(await this.host.captureKey?.(String(key))),
+    };
+    const mouse = {
+      pressed: async button => Boolean(await this.host.mousePressed?.(String(button))),
+    };
+    this.registerBuiltin('keyboard', keyboard);
+    this.registerBuiltin('mouse', mouse);
 
     this.registerBuiltin('read', async ref => this.readFile(ref));
     this.registerBuiltin('write', async (ref, line, value) => this.writeFile(ref, line, value));
@@ -134,6 +143,7 @@ class Interpreter {
     let index = 0;
     while (index < statements.length) {
       const stmt = statements[index];
+      if (this.host.yieldControl) await this.host.yieldControl();
       try {
         await this.execStmt(stmt, env, insideFunction);
       } catch (error) {

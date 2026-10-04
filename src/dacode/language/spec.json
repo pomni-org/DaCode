@@ -110,7 +110,9 @@
     "replace",
     "find",
     "log",
-    "os"
+    "os",
+    "keyboard",
+    "mouse"
   ],
   "builtinMembers": [
     "return.back",
@@ -118,7 +120,10 @@
     "os.get",
     "log.file",
     "log.console",
-    "log.all"
+    "log.all",
+    "keyboard.pressed",
+    "keyboard.capture",
+    "mouse.pressed"
   ],
   "operators": [
     "==",

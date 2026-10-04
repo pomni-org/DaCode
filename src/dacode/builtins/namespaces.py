@@ -1,6 +1,7 @@
 from __future__ import annotations
 import platform
 import random as _random
+import ctypes
 from dacode.runtime.errors import DaCodeRuntimeError
 from dacode.runtime.values import RangeSpec
 
@@ -58,3 +59,51 @@ class LogNamespace:
                 raise DaCodeRuntimeError("log.file(path) must be set first")
             with open(self.path, "a", encoding="utf-8") as handle:
                 handle.write(text + "\n")
+
+
+class KeyboardNamespace:
+    KEYS = {"space": 0x20, "escape": 0x1B, "enter": 0x0D, "tab": 0x09,
+            "ctrl": 0x11, "shift": 0x10, "alt": 0x12}
+
+    def __init__(self):
+        self.captured = set()
+        self.pulses = set()
+
+    def capture(self, chord):
+        self.captured.add(self._normalize(chord))
+        return True
+
+    def is_captured(self, chord):
+        return self._normalize(chord) in self.captured
+
+    def pulse(self, chord):
+        self.pulses.add(self._normalize(chord))
+
+    def pressed(self, chord):
+        chord = self._normalize(chord)
+        if chord in self.pulses:
+            self.pulses.remove(chord)
+            return True
+        return all(self._down(part) for part in chord.split("+"))
+
+    def _down(self, key):
+        if platform.system() != "Windows":
+            return False
+        code = self.KEYS.get(key)
+        if code is None and len(key) == 1:
+            code = ord(key.upper())
+        return bool(code and ctypes.windll.user32.GetAsyncKeyState(code) & 0x8000)
+
+    @staticmethod
+    def _normalize(value):
+        return str(value).strip().lower()
+
+
+class MouseNamespace:
+    BUTTONS = {"left": 0x01, "right": 0x02, "middle": 0x04}
+
+    def pressed(self, button):
+        if platform.system() != "Windows":
+            return False
+        code = self.BUTTONS.get(str(button).strip().lower())
+        return bool(code and ctypes.windll.user32.GetAsyncKeyState(code) & 0x8000)

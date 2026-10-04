@@ -2,7 +2,7 @@
   "name": "dacode-programming-language",
   "displayName": "DaCode Language by Pomni",
   "description": "Thin DaCode bootstrap for VS Code. Client behavior, language rules and runtime are synchronized from pomni-org/DaCode on GitHub.",
-  "version": "0.5.4",
+  "version": "0.6.0",
   "publisher": "pomni-org",
   "license": "MIT",
   "engines": {
@@ -20,6 +20,7 @@
   "activationEvents": [
     "onLanguage:dacode",
     "onCommand:dacode.runFile",
+    "onCommand:dacode.interrupt",
     "onCommand:dacode.syncLanguage"
   ],
   "contributes": {
@@ -52,6 +53,12 @@
         "title": "Run DaCode File",
         "category": "DaCode",
         "icon": "$(play)"
+      },
+      {
+        "command": "dacode.interrupt",
+        "title": "Stop DaCode Program",
+        "category": "DaCode",
+        "icon": "$(debug-stop)"
       },
       {
         "command": "dacode.syncLanguage",
@@ -89,6 +96,12 @@
       ]
     },
     "keybindings": [
+      {
+        "command": "dacode.interrupt",
+        "key": "ctrl+c",
+        "mac": "ctrl+c",
+        "when": "dacode.running"
+      },
       {
         "command": "dacode.runFile",
         "key": "ctrl+f5",

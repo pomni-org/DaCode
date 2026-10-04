@@ -39,6 +39,9 @@ def main(argv=None) -> int:
                     pprint(Parser(tokens).parse(), width=110, sort_dicts=False)
             else:
                 run_file(source_path)
+    except KeyboardInterrupt:
+        print("\nDaCode: программа остановлена пользователем (Ctrl+C).", file=sys.stderr)
+        return 130
     except Exception as error:
         print(f"DaCode error: {error}", file=sys.stderr)
         return 1

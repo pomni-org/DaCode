@@ -18,6 +18,7 @@ async function activate(context) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand('dacode.runFile', resource => dispatchRun(resource)),
+    vscode.commands.registerCommand('dacode.interrupt', () => client?.interrupt?.('ctrl+c')),
     vscode.commands.registerCommand('dacode.syncLanguage', () => syncNow(true)),
     vscode.workspace.onDidOpenTextDocument(document => {
       if (

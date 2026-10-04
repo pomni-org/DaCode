@@ -9,8 +9,10 @@ async function createClient({vscode, revision, bridge}) {
   const output = vscode.window.createOutputChannel('DaCode');
   const diagnostics = vscode.languages.createDiagnosticCollection('dacode');
   const semanticEmitter = new vscode.EventEmitter();
+  const inputState = new InputState(vscode);
   const model = new LanguageModel(revision.spec);
-  const disposables = [output, diagnostics, semanticEmitter];
+  const disposables = [output, diagnostics, semanticEmitter, inputState];
+  let runState = null;
 
   applyRevision(currentRevision);
 
@@ -72,6 +74,10 @@ async function createClient({vscode, revision, bridge}) {
   }
 
   async function runFile(resource) {
+    if (runState) {
+      vscode.window.showWarningMessage('DaCode уже выполняет программу. Нажми Ctrl+C для остановки.');
+      return;
+    }
     let document;
     if (resource instanceof vscode.Uri) document = await vscode.workspace.openTextDocument(resource);
     else document = vscode.window.activeTextEditor?.document;
@@ -105,6 +111,8 @@ async function createClient({vscode, revision, bridge}) {
       ? (vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? process.cwd())
       : path.dirname(document.uri.fsPath);
 
+    runState = {interrupted: false};
+    await vscode.commands.executeCommand('setContext', 'dacode.running', true);
     const host = {
       write: value => output.appendLine(String(value)),
       clear: () => output.clear(),
@@ -113,6 +121,17 @@ async function createClient({vscode, revision, bridge}) {
       writeText: (filePath, text) => fs.writeFile(filePath, text, 'utf8'),
       logFile: null,
       logAll: false,
+      keyPressed: key => inputState.keyPressed(key),
+      captureKey: key => inputState.capture(key),
+      mousePressed: button => inputState.mousePressed(button),
+      async yieldControl() {
+        await new Promise(resolve => setImmediate(resolve));
+        if (runState?.interrupted) {
+          const error = new Error('Программа остановлена пользователем.');
+          error.code = 'DACODE_INTERRUPTED';
+          throw error;
+        }
+      },
     };
 
     const startedAt = Date.now();
@@ -133,8 +152,22 @@ async function createClient({vscode, revision, bridge}) {
         );
       }
     } catch (error) {
-      reportExecutionError(vscode, diagnostics, output, document, error);
+      if (error?.code === 'DACODE_INTERRUPTED') {
+        output.appendLine('DaCode: программа остановлена пользователем (Ctrl+C).');
+      } else {
+        reportExecutionError(vscode, diagnostics, output, document, error);
+      }
+    } finally {
+      runState = null;
+      await vscode.commands.executeCommand('setContext', 'dacode.running', false);
     }
+  }
+
+  function interrupt(chord = 'ctrl+c') {
+    if (!runState) return false;
+    if (inputState.isCaptured(chord)) inputState.pulse(chord);
+    else runState.interrupted = true;
+    return true;
   }
 
   async function dispose() {
@@ -144,7 +177,65 @@ async function createClient({vscode, revision, bridge}) {
     }
   }
 
-  return {runFile, applyRevision, dispose};
+  return {runFile, interrupt, applyRevision, dispose};
+}
+
+class InputState {
+  constructor(vscode) {
+    this.vscode = vscode;
+    this.keys = new Set();
+    this.buttons = new Set();
+    this.pulses = new Set();
+    this.captured = new Set();
+    this.panel = null;
+    this.messageDisposable = null;
+  }
+  normalize(value) { return String(value).trim().toLowerCase(); }
+  isCaptured(value) { return this.captured.has(this.normalize(value)); }
+  capture(value) { this.ensurePanel(); this.captured.add(this.normalize(value)); return true; }
+  pulse(value) { this.pulses.add(this.normalize(value)); }
+  keyPressed(value) {
+    this.ensurePanel();
+    const key = this.normalize(value);
+    if (this.pulses.delete(key)) return true;
+    return this.keys.has(key);
+  }
+  mousePressed(value) { this.ensurePanel(); return this.buttons.has(this.normalize(value)); }
+  ensurePanel() {
+    if (this.panel) return;
+    const panel = this.vscode.window.createWebviewPanel(
+      'dacodeControls', 'DaCode Controls', this.vscode.ViewColumn.Beside,
+      {enableScripts: true, retainContextWhenHidden: true}
+    );
+    panel.webview.html = controlsHtml();
+    this.messageDisposable = panel.webview.onDidReceiveMessage(message => {
+      const target = message.kind === 'mouse' ? this.buttons : this.keys;
+      const value = this.normalize(message.value);
+      if (message.down) target.add(value); else target.delete(value);
+    });
+    panel.onDidDispose(() => {
+      this.messageDisposable?.dispose();
+      this.messageDisposable = null;
+      this.panel = null;
+      this.keys.clear();
+      this.buttons.clear();
+    });
+    this.panel = panel;
+  }
+  dispose() { this.messageDisposable?.dispose(); this.panel?.dispose(); }
+}
+
+function controlsHtml() {
+  return `<!doctype html><html><body tabindex="0" style="font-family:sans-serif;padding:24px">
+  <h2>DaCode Controls</h2><p>Держи эту панель в фокусе для keyboard.pressed() и mouse.pressed().</p>
+  <script>const v=acquireVsCodeApi(),keys=new Set();
+  const key=e=>[e.ctrlKey?'ctrl':null,e.shiftKey?'shift':null,e.altKey?'alt':null,e.key.toLowerCase()].filter(Boolean).join('+');
+  addEventListener('keydown',e=>{e.preventDefault();v.postMessage({kind:'key',value:key(e),down:true})});
+  addEventListener('keyup',e=>{e.preventDefault();v.postMessage({kind:'key',value:key(e),down:false})});
+  addEventListener('mousedown',e=>v.postMessage({kind:'mouse',value:['left','middle','right'][e.button]||String(e.button),down:true}));
+  addEventListener('mouseup',e=>v.postMessage({kind:'mouse',value:['left','middle','right'][e.button]||String(e.button),down:false}));
+  addEventListener('blur',()=>{['left','middle','right'].forEach(value=>v.postMessage({kind:'mouse',value,down:false}))});
+  document.body.focus();</script></body></html>`;
 }
 
 function reportExecutionError(vscode, diagnostics, output, document, error) {

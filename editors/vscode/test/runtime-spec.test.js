@@ -46,6 +46,24 @@ test('log can be used as an input variable', async () => {
   assert.deepEqual(output, ['saved']);
 });
 
+test('keyboard and mouse state are exposed to DaCode', async () => {
+  const output = [];
+  const captured = [];
+  const host = {
+    write: value => output.push(String(value)), clear() {},
+    keyPressed: key => key === 'space',
+    mousePressed: button => button === 'left',
+    captureKey: key => { captured.push(key); return true; },
+  };
+  await runtime.execute(
+    'console(keyboard.pressed("space"))\nconsole(mouse.pressed("left"))\nconsole(keyboard.capture("ctrl+c"))\n',
+    host, process.cwd(),
+    {keywords:[],literals:['true','false','Void'],types:{direct:[],compound:[],subtypes:[]}},
+  );
+  assert.deepEqual(output, ['true', 'true', 'true']);
+  assert.deepEqual(captured, ['ctrl+c']);
+});
+
 test('reserved keyword variable name produces a useful error', () => {
   const spec = {
     keywords: ['error', 'straight'],

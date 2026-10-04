@@ -83,7 +83,7 @@
       "patterns": [
         {
           "name": "support.function.builtin.dacode",
-          "match": "\\b(?:console|input|return|random|range|clear|read|write|delete|replace|find|log|os)\\b(?=\\s*(?:\\.|\\())"
+          "match": "\\b(?:console|input|return|random|range|clear|read|write|delete|replace|find|log|os|keyboard|mouse)\\b(?=\\s*(?:\\.|\\())"
         },
         {
           "name": "variable.language.dacode",

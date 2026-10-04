@@ -85,6 +85,8 @@ npm test
 - `straight()`, постфиксный `straight(error)`, `error()`, `exit()`.
 - `console`, `w"..."`, цветные сегменты.
 - `random(1-10)`, `random.choice(...)`.
+- `keyboard.pressed("space")`, `mouse.pressed("left")` для интерактивного ввода.
+- `Ctrl+C` штатно останавливает программу; `keyboard.capture("ctrl+c")` отдаёт сочетание программе вместо автоостановки.
 - `clear()`, `os.get(<|>)`, `log`.
 - Операции списков и строк.
 - Контейнеры `open()/close()`.

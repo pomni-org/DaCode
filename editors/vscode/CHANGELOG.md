@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.0
+
+- Made `Ctrl+C` stop a running DaCode program cleanly in the CLI and VS Code.
+- Added `keyboard.pressed(key)`, `keyboard.capture(key)` and `mouse.pressed(button)` for interactive programs.
+
 ## 0.5.4
 
 - Restored always-available baseline syntax highlighting while the GitHub-backed semantic client starts or works offline.

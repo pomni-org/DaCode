@@ -5,6 +5,7 @@ from pathlib import Path
 from dacode.frontend import Lexer, Parser
 from dacode.loader import discover_dc
 from dacode.runtime import DaCodeRuntimeError, Interpreter
+from dacode.builtins.namespaces import KeyboardNamespace
 
 
 def execute(source, inputs=None, interpreter=None):
@@ -21,6 +22,14 @@ def execute(source, inputs=None, interpreter=None):
 
 
 class RuntimeTests(unittest.TestCase):
+    def test_keyboard_capture_and_pulse(self):
+        keyboard = KeyboardNamespace()
+        self.assertTrue(keyboard.capture("Ctrl+C"))
+        self.assertTrue(keyboard.is_captured("ctrl+c"))
+        keyboard.pulse("CTRL+C")
+        self.assertTrue(keyboard.pressed("ctrl+c"))
+        self.assertFalse(keyboard.pressed("ctrl+c"))
+
     def test_remem_is_allowed_for_variables(self):
         self.assertEqual(execute('remem name="Дак"\nconsole(name)\n'), ['Дак'])
         self.assertEqual(execute('remember numb age=20\nconsole(age)\n'), ['20'])
