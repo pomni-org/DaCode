@@ -1,0 +1,218 @@
+{
+  "schemaVersion": 1,
+  "language": {
+    "id": "dacode",
+    "name": "DaCode",
+    "extensions": [
+      ".dc"
+    ],
+    "sourceExtension": ".dc"
+  },
+  "comments": {
+    "line": "#"
+  },
+  "brackets": [
+    [
+      "(",
+      ")"
+    ],
+    [
+      "[",
+      "]"
+    ],
+    [
+      "{",
+      "}"
+    ]
+  ],
+  "autoClosingPairs": [
+    [
+      "(",
+      ")"
+    ],
+    [
+      "[",
+      "]"
+    ],
+    [
+      "{",
+      "}"
+    ],
+    [
+      "\"",
+      "\""
+    ],
+    [
+      "'",
+      "'"
+    ]
+  ],
+  "keywords": [
+    "if",
+    "elif",
+    "else",
+    "while",
+    "for",
+    "in",
+    "remem",
+    "remember",
+    "func",
+    "class",
+    "and",
+    "or",
+    "not",
+    "block",
+    "exit",
+    "error",
+    "straight",
+    "open",
+    "close",
+    "from",
+    "import"
+  ],
+  "literals": [
+    "true",
+    "false",
+    "Void"
+  ],
+  "types": {
+    "direct": [
+      "text",
+      "numb",
+      "bool",
+      "list",
+      "dict",
+      "error"
+    ],
+    "compound": [
+      "compound"
+    ],
+    "subtypes": [
+      "numb.float"
+    ]
+  },
+  "specialIdentifiers": [
+    "first",
+    "twice"
+  ],
+  "builtins": [
+    "console",
+    "input",
+    "return",
+    "random",
+    "range",
+    "clear",
+    "read",
+    "write",
+    "delete",
+    "replace",
+    "find",
+    "log",
+    "os"
+  ],
+  "builtinMembers": [
+    "return.back",
+    "random.choice",
+    "os.get",
+    "log.file",
+    "log.console",
+    "log.all"
+  ],
+  "operators": [
+    "==",
+    "!=",
+    "<=",
+    ">=",
+    "//",
+    "**",
+    "->",
+    "+",
+    "-",
+    "*",
+    "/",
+    "%",
+    "=",
+    "<",
+    ">",
+    "&"
+  ],
+  "completion": [
+    {
+      "label": "if",
+      "kind": "keyword",
+      "insertText": "if ${1:condition}:\n    ${0}"
+    },
+    {
+      "label": "while",
+      "kind": "keyword",
+      "insertText": "while ${1:condition}:\n    ${0}"
+    },
+    {
+      "label": "for",
+      "kind": "keyword",
+      "insertText": "for ${1:item} in ${2:items}:\n    ${0}"
+    },
+    {
+      "label": "remem func",
+      "kind": "function",
+      "insertText": "remem func ${1:name}(${2}):\n    ${0}"
+    },
+    {
+      "label": "remem class",
+      "kind": "class",
+      "insertText": "remem class ${1:Name}:\n    first.${2:value} = ${3:Void}"
+    },
+    {
+      "label": "return.back",
+      "kind": "function",
+      "insertText": "return.back(${1:value}) ${2:numb}"
+    },
+    {
+      "label": "straight(error)",
+      "kind": "function",
+      "insertText": "straight(error)"
+    },
+    {
+      "label": "console",
+      "kind": "function",
+      "insertText": "console(${1})"
+    },
+    {
+      "label": "input",
+      "kind": "function",
+      "insertText": "input(${1:\"Введите значение: \"}, ${2:text})"
+    },
+    {
+      "label": "random",
+      "kind": "function",
+      "insertText": "random(${1:1}-${2:10})"
+    }
+  ],
+  "hover": {
+    "Void": "**Void** — compound-пустота. Не является `false` и не участвует в арифметике/условиях.",
+    "straight": "**straight()** — выйти из текущей конструкции. `straight(error)` обрабатывает ошибку предыдущей операции.",
+    "return.back": "**return.back(value) type** — вернуть значение из функции и при наличии типа проверить его.",
+    "first": "**first.value** — родительское значение класса/контейнера.",
+    "twice": "**twice.value** — получить независимую копию соответствующего `first.value` из другого контейнера.",
+    "block": "**block** — запретить дальнейшее изменение переменной.",
+    "numb.float": "**numb.float** — составной числовой тип для числа с плавающей точкой."
+  },
+  "strings": {
+    "quotes": [
+      "\"",
+      "'"
+    ],
+    "smartPrefix": "w"
+  },
+  "declarations": {
+    "functionKeyword": "func",
+    "classKeyword": "class"
+  },
+  "indentation": {
+    "blockSuffix": ":",
+    "dedentKeywords": [
+      "elif",
+      "else"
+    ]
+  }
+}

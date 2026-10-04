@@ -1,0 +1,123 @@
+{
+  "name": "dacode-language",
+  "displayName": "DaCode",
+  "description": "DaCode support for VS Code. Language rules and runtime are synchronized from pomni-org/DaCode.",
+  "version": "0.2.0",
+  "publisher": "pomni-org",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "dacode",
+    "dc",
+    "language"
+  ],
+  "main": "./src/extension.js",
+  "activationEvents": [
+    "onLanguage:dacode",
+    "onCommand:dacode.runFile",
+    "onCommand:dacode.syncLanguage"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "dacode",
+        "aliases": [
+          "DaCode",
+          "dacode"
+        ],
+        "extensions": [
+          ".dc"
+        ]
+      }
+    ],
+    "commands": [
+      {
+        "command": "dacode.runFile",
+        "title": "Run DaCode File",
+        "category": "DaCode",
+        "icon": "$(play)"
+      },
+      {
+        "command": "dacode.syncLanguage",
+        "title": "Sync DaCode from GitHub",
+        "category": "DaCode",
+        "icon": "$(sync)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "dacode.runFile",
+          "when": "resourceLangId == dacode",
+          "group": "navigation@1"
+        },
+        {
+          "command": "dacode.syncLanguage",
+          "when": "resourceLangId == dacode",
+          "group": "navigation@2"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "dacode.runFile",
+          "when": "resourceLangId == dacode",
+          "group": "navigation@1"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "dacode.runFile",
+          "when": "resourceExtname == .dc",
+          "group": "navigation@1"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "dacode.runFile",
+        "key": "ctrl+f5",
+        "mac": "cmd+f5",
+        "when": "editorLangId == dacode && editorTextFocus"
+      }
+    ],
+    "configuration": {
+      "title": "DaCode",
+      "properties": {
+        "dacode.clearOutputBeforeRun": {
+          "type": "boolean",
+          "default": true,
+          "description": "Clear the DaCode output channel before each run."
+        },
+        "dacode.syncIntervalMinutes": {
+          "type": "number",
+          "default": 15,
+          "minimum": 5,
+          "maximum": 1440,
+          "description": "How often the extension checks pomni-org/DaCode for language/runtime changes."
+        },
+        "dacode.syncOnOpen": {
+          "type": "boolean",
+          "default": true,
+          "description": "Check GitHub for a newer DaCode revision when a .dc file is opened."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pomni-org/DaCode.git",
+    "directory": "editors/vscode"
+  },
+  "homepage": "https://github.com/pomni-org/DaCode/tree/main/editors/vscode",
+  "bugs": {
+    "url": "https://github.com/pomni-org/DaCode/issues"
+  }
+}

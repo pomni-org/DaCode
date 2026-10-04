@@ -43,8 +43,13 @@ DaCode/
 │   ├── builtins/        # расширяемая стандартная библиотека
 │   ├── bridges/         # адаптеры внешних языков/runtime
 │   ├── loader/          # поиск .dc и запуск файлов
+│   ├── language/        # единая машинная спецификация языка
 │   ├── api.py           # программный API
 │   └── cli.py           # CLI
+├── editors/
+│   └── vscode/          # тонкий VS Code-клиент, синхронизируемый с GitHub
+├── tooling/
+│   └── runtime-js/      # runtime, который VS Code скачивает из репозитория
 ├── tests/
 ├── examples/
 ├── docs/
@@ -52,6 +57,21 @@ DaCode/
 ```
 
 Подробности: [архитектура](docs/ARCHITECTURE.md) и [как расширять DaCode](docs/EXTENDING.md).
+
+## VS Code
+
+В `editors/vscode` лежит **тонкое** расширение. Оно знает только, что `.dc` — это DaCode, показывает кнопку **▶ Run DaCode File** и умеет синхронизироваться с `pomni-org/DaCode`.
+
+Синтаксис не зашит в VSIX. Расширение скачивает `src/dacode/language/spec.json`, а runtime — из `tooling/runtime-js/`. Изменения определяются по Git blob SHA, поэтому если отслеживаемые файлы изменились в `main`, VS Code подтянет новую ревизию автоматически. Файлы runtime хранятся в глобальном кеше расширения, а не в workspace: папка проекта может содержать только `.dc` и данные программы.
+
+Если GitHub временно недоступен, используется последняя успешно скачанная ревизия. При первой установке интернет нужен один раз. Подробно: [docs/VSCODE_SYNC.md](docs/VSCODE_SYNC.md).
+
+Тесты расширения:
+
+```bash
+cd editors/vscode
+npm test
+```
 
 ## Уже поддерживается
 
