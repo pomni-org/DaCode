@@ -20,8 +20,6 @@
 - Added packaging guards that fail CI if remote client code leaks into the VSIX.
 - Kept the corrected compact DaCode file icon and Marketplace icon.
 
-# Changelog
-
 ## 0.5.0
 
 - Rebuilt the extension as a thin GitHub bootstrap.
@@ -29,14 +27,10 @@
 - Added cached offline fallback for the full GitHub client revision.
 - Added dedicated compact file icon and a separate Marketplace icon based on the original DaCode DC logo.
 
-# Changelog
-
 ## 0.4.2
 
 - Moved the Marketplace identity to `pomni-org.dacode-programming-language` because the removed `pomni-org.dacode-language` identity is permanently reserved by the Marketplace.
 - This is a fresh Marketplace listing; future updates can use the normal update flow.
-
-# Changelog
 
 ## 0.4.0
 
@@ -44,8 +38,6 @@
 - Added multiline comments with `""" ... """`.
 - Added the DaCode logo as the Marketplace extension icon and default `.dc` language icon.
 - Added block-comment editor support and semantic highlighting.
-
-# Changelog
 
 ## 0.2.0
 
