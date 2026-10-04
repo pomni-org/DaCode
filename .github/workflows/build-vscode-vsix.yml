@@ -1,0 +1,34 @@
+name: build-vscode-vsix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'editors/vscode/**'
+      - '.github/workflows/build-vscode-vsix.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: editors/vscode
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test extension
+        run: npm test
+      - name: Package VSIX
+        run: npx --yes @vscode/vsce package --out dacode-language-${{ github.sha }}.vsix
+      - name: Upload VSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: dacode-vscode-vsix
+          path: editors/vscode/*.vsix
+          if-no-files-found: error
