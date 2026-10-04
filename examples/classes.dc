@@ -1,8 +1,8 @@
-remem class Parent:
+remem Parent:
     first.name = "Иван"
     first.age = 20
 
-remem class Child:
+remem Child:
     twice.name
     twice.age
 

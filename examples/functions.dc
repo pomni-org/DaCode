@@ -1,4 +1,4 @@
-remem func sum(numb=a, numb=b):
+remem sum(numb=a, numb=b):
     return.back(a+b) numb
 result = sum(2, 3)
 console(w"Сумма: {result}")

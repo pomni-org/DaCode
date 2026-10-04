@@ -15,7 +15,7 @@ test('downloaded runtime consumes the downloaded language spec', async () => {
 
 test('remem works for variables and output controls are parsed', async () => {
   const spec = {
-    keywords: ['remem', 'remember', 'func', 'class', 'straight', 'error'],
+    keywords: ['remem', 'remember', 'straight', 'error'],
     literals: ['true', 'false', 'Void'],
     types: {direct:['numb','text','bool','list','dict','error'], compound:['compound'], subtypes:['numb.float']},
   };
@@ -37,4 +37,30 @@ test('reserved keyword variable name produces a useful error', () => {
     () => runtime.parse('error = straight(error)\n', spec),
     /reserved DaCode word/
   );
+});
+
+test('new remem syntax distinguishes function class and variable', () => {
+  const spec = {
+    keywords:['remem','remember','straight','error'], literals:['true','false','Void'],
+    types:{direct:['numb','text','bool','list','dict','error'],compound:['compound'],subtypes:['numb.float']},
+  };
+  const program = runtime.parse(
+    'remem add(numb=a, numb=b):\n    return.back(a+b) numb\nremem User:\n    first.name="Дак"\nremem x = 2\n',
+    spec
+  );
+  assert.equal(program.statements[0].kind, 'FuncDef');
+  assert.equal(program.statements[1].kind, 'ClassDef');
+  assert.equal(program.statements[2].kind, 'Assignment');
+});
+
+test('triple quote comments are ignored by runtime lexer', () => {
+  const spec = {
+    keywords:['remem'], literals:['true','false','Void'],
+    types:{direct:['numb','text','bool','list','dict','error'],compound:['compound'],subtypes:['numb.float']},
+  };
+  const program = runtime.parse(
+    'console("before")\n"""\nnot code at all !!!\n"""\nconsole("after")\n',
+    spec
+  );
+  assert.equal(program.statements.length, 2);
 });

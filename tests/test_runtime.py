@@ -35,6 +35,28 @@ class RuntimeTests(unittest.TestCase):
         with self.assertRaisesRegex(Exception, "reserved DaCode word"):
             Parser(Lexer('error = straight(error)\n').tokenize()).parse()
 
+    def test_new_remem_syntax_for_function_and_class(self):
+        self.assertEqual(
+            execute('remem add(numb=a, numb=b):\n    return.back(a+b) numb\nconsole(add(2,3))\n'),
+            ['5'],
+        )
+        self.assertEqual(
+            execute('remem User:\n    first.name="Дак"\nu=User()\nconsole(u.name)\n'),
+            ['Дак'],
+        )
+
+    def test_block_comments_are_ignored(self):
+        source = (
+            'console("before")\n'
+            '"""\n'
+            'это большой комментарий\n'
+            'console("НЕ ВЫПОЛНЯТЬ")\n'
+            '"""\n'
+            '# обычный комментарий\n'
+            'console("after")\n'
+        )
+        self.assertEqual(execute(source), ['before', 'after'])
+
     def test_result_depends_on_source(self):
         self.assertEqual(execute('console(2+3)\n'), ['5'])
         self.assertEqual(execute('console(7*6)\n'), ['42'])
@@ -67,7 +89,7 @@ class RuntimeTests(unittest.TestCase):
 
     def test_return_back_typed(self):
         source = (
-            'remem func add(numb=a, numb=b):\n'
+            'remem add(numb=a, numb=b):\n'
             '    return.back(a+b) numb\n'
             'console(add(2,3))\n'
         )
@@ -94,7 +116,7 @@ class RuntimeTests(unittest.TestCase):
 
     def test_straight_skips_function(self):
         source = (
-            'remem func f():\n'
+            'remem f():\n'
             '    console("before")\n'
             '    straight()\n'
             '    console("after")\n'
@@ -105,9 +127,9 @@ class RuntimeTests(unittest.TestCase):
 
     def test_first_twice_copy_is_independent(self):
         source = (
-            'remem class P:\n'
+            'remem P:\n'
             '    first.name="Иван"\n'
-            'remem class C:\n'
+            'remem C:\n'
             '    twice.name\n'
             'p=P()\n'
             'c=C()\n'

@@ -1,2 +1,2 @@
-remem func loading():
+remem loading():
     return.back("loaded") text
