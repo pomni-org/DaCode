@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.2
+
+- Changed the Marketplace display name to `DaCode Language by Pomni` because the removed `DaCode` listing still reserves that display name.
+
 ## 0.5.1
 
 - Fixed VSIX exclusions so the GitHub client is no longer bundled locally.
