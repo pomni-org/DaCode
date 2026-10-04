@@ -1,0 +1,49 @@
+name: release-vscode-extension
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'editors/vscode/**'
+      - '.github/workflows/release-vscode-extension.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: editors/vscode
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test extension
+        run: npm test
+      - name: Package VSIX
+        id: package
+        shell: bash
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          FILE="dacode-language-${VERSION}.vsix"
+          npx --yes @vscode/vsce package --out "$FILE"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "file=$FILE" >> "$GITHUB_OUTPUT"
+          echo "tag=vscode-v$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.package.outputs.tag }}
+          FILE: ${{ steps.package.outputs.file }}
+          VERSION: ${{ steps.package.outputs.version }}
+        shell: bash
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$FILE" --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$TAG" "$FILE"               --repo "$GITHUB_REPOSITORY"               --target "$GITHUB_SHA"               --title "DaCode VS Code $VERSION"               --notes "Installable DaCode extension for VS Code. Download the .vsix file and use Extensions → … → Install from VSIX."
+          fi
