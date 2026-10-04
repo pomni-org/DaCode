@@ -10,6 +10,7 @@ const REPO = 'DaCode';
 const BRANCH = 'main';
 const SPEC_PATH = 'src/dacode/language/spec.json';
 const RUNTIME_PREFIX = 'tooling/runtime-js/';
+const CLIENT_PREFIX = 'editors/vscode/remote/';
 
 function requestText(url, headers = {}) {
   return new Promise((resolve, reject) => {
@@ -62,7 +63,11 @@ class RepositorySync {
       'https://api.github.com/repos/' + OWNER + '/' + REPO + '/git/trees/' + commitSha + '?recursive=1'
     );
     const tracked = (tree.tree || [])
-      .filter(item => item.type === 'blob' && (item.path === SPEC_PATH || item.path.startsWith(RUNTIME_PREFIX)))
+      .filter(item => item.type === 'blob' && (
+        item.path === SPEC_PATH ||
+        item.path.startsWith(RUNTIME_PREFIX) ||
+        item.path.startsWith(CLIENT_PREFIX)
+      ))
       .filter(item => item.path === SPEC_PATH || item.path.endsWith('.js'))
       .sort((a, b) => a.path.localeCompare(b.path));
 
@@ -71,6 +76,12 @@ class RepositorySync {
     }
     if (!tracked.some(item => item.path === RUNTIME_PREFIX + 'index.js')) {
       throw new Error('DaCode repository is missing ' + RUNTIME_PREFIX + 'index.js');
+    }
+    if (!tracked.some(item => item.path === CLIENT_PREFIX + 'client.js')) {
+      throw new Error('DaCode repository is missing ' + CLIENT_PREFIX + 'client.js');
+    }
+    if (!tracked.some(item => item.path === CLIENT_PREFIX + 'language-service.js')) {
+      throw new Error('DaCode repository is missing ' + CLIENT_PREFIX + 'language-service.js');
     }
 
     const fingerprint = crypto
@@ -138,5 +149,5 @@ module.exports = {
   RepositorySync,
   GitHubSource,
   validateSpec,
-  constants: {OWNER, REPO, BRANCH, SPEC_PATH, RUNTIME_PREFIX},
+  constants: {OWNER, REPO, BRANCH, SPEC_PATH, RUNTIME_PREFIX, CLIENT_PREFIX},
 };

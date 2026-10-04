@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {LanguageModel} = require('../src/language-service');
+const {LanguageModel} = require('../remote/language-service');
 
 const spec = {
   keywords: ['if', 'func'], literals: ['Void'],

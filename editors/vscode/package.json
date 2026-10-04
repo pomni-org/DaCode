@@ -1,8 +1,8 @@
 {
   "name": "dacode-programming-language",
-  "displayName": "DaCode Programming Language",
-  "description": "DaCode support for VS Code. Language rules and runtime are synchronized from pomni-org/DaCode.",
-  "version": "0.4.2",
+  "displayName": "DaCode",
+  "description": "Thin DaCode bootstrap for VS Code. Client behavior, language rules and runtime are synchronized from pomni-org/DaCode on GitHub.",
+  "version": "0.5.0",
   "publisher": "pomni-org",
   "license": "MIT",
   "engines": {
@@ -34,8 +34,8 @@
           ".dc"
         ],
         "icon": {
-          "light": "./assets/dacode.png",
-          "dark": "./assets/dacode.png"
+          "light": "./assets/dacode-file.png",
+          "dark": "./assets/dacode-file.png"
         }
       }
     ],
@@ -124,5 +124,5 @@
   "bugs": {
     "url": "https://github.com/pomni-org/DaCode/issues"
   },
-  "icon": "assets/dacode.png"
+  "icon": "assets/dacode-marketplace.png"
 }

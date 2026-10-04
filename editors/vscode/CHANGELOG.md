@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0
+
+- Rebuilt the extension as a thin GitHub bootstrap.
+- VS Code client behavior, language service, DaCode spec and JS runtime are now synchronized together from one GitHub revision.
+- Added cached offline fallback for the full GitHub client revision.
+- Added dedicated compact file icon and a separate Marketplace icon based on the original DaCode DC logo.
+
+# Changelog
+
 ## 0.4.2
 
 - Moved the Marketplace identity to `pomni-org.dacode-programming-language` because the removed `pomni-org.dacode-language` identity is permanently reserved by the Marketplace.
